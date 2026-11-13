@@ -30,7 +30,7 @@ const projects = [
   { no: '03', title: 'พื้นที่เรียนรู้ร่วมกัน', en: 'Shared Learning Space', budget: '฿80,000', progress: 85, text: 'สร้างพื้นที่แลกเปลี่ยนทักษะ ภูมิปัญญา และกิจกรรมสำหรับทุกวัย' },
 ]
 
-function VillageScene({ activePlace }) {
+function VillageScene({ activePlace, onSelectPlace }) {
   const mountRef = useRef(null)
   useEffect(() => {
     const host = mountRef.current
@@ -148,6 +148,7 @@ function VillageScene({ activePlace }) {
       ['ศูนย์ชุมชน', 4.5, -2.1], ['ตลาดท้องถิ่น', -3.4, -3.1],
       ['พื้นที่เกษตร', 3.9, 3.35], ['แหล่งเรียนรู้', -4.2, 2.8]
     ]
+    const markerObjects = []
     markerData.forEach(([label, x, z]) => {
       const selected = label === activePlace
       const pin = new THREE.Group()
@@ -169,8 +170,22 @@ function VillageScene({ activePlace }) {
       const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }))
       tag.scale.set(selected ? 2.25 : 1.85, selected ? .56 : .46, 1)
       tag.position.y = 1.55; pin.add(tag)
-      pin.position.set(x, .08, z); scene.add(pin)
+      pin.position.set(x, .08, z); pin.userData.place = label; scene.add(pin); markerObjects.push(pin)
     })
+    const raycaster = new THREE.Raycaster()
+    const pointer = new THREE.Vector2()
+    const selectMarker = (event) => {
+      const rect = renderer.domElement.getBoundingClientRect()
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+      raycaster.setFromCamera(pointer, camera)
+      const hit = raycaster.intersectObjects(markerObjects, true)[0]
+      if (!hit) return
+      let node = hit.object
+      while (node && !node.userData.place) node = node.parent
+      if (node?.userData.place) onSelectPlace?.(node.userData.place)
+    }
+    renderer.domElement.addEventListener('click', selectMarker)
     controls.target.set(focus[0], .25, focus[2])
     camera.position.set(focus[0]+8, 8.5, focus[2]+9)
     controls.update()
@@ -185,7 +200,7 @@ function VillageScene({ activePlace }) {
     observer = new ResizeObserver(resize); observer.observe(host); resize()
     const animate=()=>{ frame=requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera) }
     animate()
-    return ()=>{ cancelAnimationFrame(frame); observer?.disconnect(); controls.dispose(); renderer.dispose(); host.removeChild(renderer.domElement); scene.traverse(o=>{o.geometry?.dispose(); if(o.material){Array.isArray(o.material)?o.material.forEach(m=>m.dispose()):o.material.dispose()}}) }
+    return ()=>{ cancelAnimationFrame(frame); observer?.disconnect(); renderer.domElement.removeEventListener('click', selectMarker); controls.dispose(); renderer.dispose(); if(renderer.domElement.parentNode===host) host.removeChild(renderer.domElement); scene.traverse(o=>{o.geometry?.dispose(); if(o.material){const materials=Array.isArray(o.material)?o.material:[o.material]; materials.forEach(m=>{m.map?.dispose();m.dispose()})}}) }
   }, [activePlace])
   return <div className="village-canvas" ref={mountRef}><span className="scene-hint">DRAG TO EXPLORE · ลากเพื่อหมุนมุมมอง</span></div>
 }
@@ -244,7 +259,7 @@ function App(){
       <section className="explore-section" id="explore">
         <SectionLabel no="02" en="EXPLORE THE VILLAGE"/>
         <div className="section-heading"><div><p className="kicker">A PLACE TO DISCOVER</p><h2>สำรวจพื้นที่<br/><em>ในมุมมองใหม่</em></h2></div><p className="heading-note">มองเห็นความเชื่อมโยงของสถานที่ ผู้คน และทรัพยากร ผ่านแผนที่ชุมชนสามมิติ</p></div>
-        <div className="village-frame"><div className="village-topline"><span>COMMUNITY MAP / 001</span><span>INTERACTIVE 3D MODEL</span></div><VillageScene activePlace={activePlace}/><div className="village-bottom"><div><span className="tiny-label">SELECTED LOCATION</span><strong>{activePlace}</strong></div><div className="place-pills">{places.map(p=><button className={activePlace===p?'active':''} onClick={()=>setActivePlace(p)} key={p}>{p}</button>)}</div></div></div>
+        <div className="village-frame"><div className="village-topline"><span>COMMUNITY MAP / 001</span><span>INTERACTIVE 3D MODEL</span></div><VillageScene activePlace={activePlace} onSelectPlace={setActivePlace}/><div className="village-bottom"><div><span className="tiny-label">SELECTED LOCATION</span><strong>{activePlace}</strong></div><div className="place-pills">{places.map(p=><button className={activePlace===p?'active':''} onClick={()=>setActivePlace(p)} key={p}>{p}</button>)}</div></div></div>
       </section>
 
       <section className="identity-section" id="products">
