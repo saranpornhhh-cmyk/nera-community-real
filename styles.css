@@ -11,3 +11,29 @@ section:not(.hero){padding:90px 9vw}.section-label{display:flex;gap:17px;align-i
 @media(max-width:850px){.header{height:72px;padding:0 5vw}.nav{gap:17px;font-size:11px}.hero{padding:55px 5vw;min-height:auto;grid-template-columns:1fr 1fr;gap:25px}.hero-image{height:420px}.hero-index{margin-top:45px}.hero-stamp{width:75px;height:75px}.section-heading{align-items:start}.project-row{grid-template-columns:30px 1.3fr .7fr 1fr 18px;gap:12px}.project-title p{display:none}section:not(.hero){padding:75px 6vw}}
 @media(max-width:620px){.header{height:66px}.brand{font-size:26px}.menu-toggle{display:block;padding:7px}.nav{display:none;position:absolute;top:66px;left:0;right:0;background:var(--ivory);padding:22px 6vw 28px;border-bottom:1px solid var(--line);flex-direction:column;align-items:stretch;gap:20px}.nav.nav-open{display:flex}.nav-contact{border-left:0;padding-left:0}.hero{display:flex;flex-direction:column;align-items:stretch;padding:45px 6vw 40px;gap:34px}.hero-copy{padding:0}.eyebrow{font-size:8px}h1{font-size:clamp(43px,12vw,62px);letter-spacing:-1.8px;margin:25px 0 17px}.hero-lead{font-size:13px}.hero-actions{gap:20px}.hero-index{margin-top:36px;font-size:8px}.hero-visual{padding:0 0 20px 15px}.hero-image{height:310px}.hero-stamp{left:-5px;top:22px;width:67px;height:67px;font-size:7px}.intro-grid,.contact-grid{grid-template-columns:1fr;gap:30px;padding:42px 0}.intro-grid h2,.section-heading h2,.contact-grid h2{font-size:43px}.serif-quote{font-size:20px}.stats-row{grid-template-columns:1fr 1fr;row-gap:25px}.stat:nth-child(3){border-left:0;padding-left:0}.stat strong{font-size:39px}section:not(.hero){padding:62px 6vw}.section-heading{display:block;padding:38px 0 28px}.heading-note{margin-top:20px}.village-canvas{height:310px}.village-bottom{align-items:flex-start;flex-direction:column;gap:15px}.place-pills{gap:6px}.place-pills button{font-size:10px;padding:7px 9px}.product-grid{grid-template-columns:1fr 1fr;gap:20px 13px}.product-2{margin-top:0}.product-2 .product-image-wrap,.product-image-wrap{height:210px}.product-2{grid-column:span 2;width:75%;justify-self:center;grid-row:1}.product-2 .product-image-wrap{height:260px}.product h3{font-size:15px}.product-meta{font-size:10px}.project-row{grid-template-columns:25px 1fr auto;gap:12px;padding:22px 0}.project-budget{grid-column:2}.project-progress{grid-column:2 / 3}.project-arrow{grid-column:3;grid-row:1}.project-title h3{font-size:16px}.project-title p{display:block;font-size:10px}.story-feature{height:390px}.story-overlay{left:7%;right:7%}.story-overlay h2{font-size:43px}.contact-grid{padding-top:40px}.footer{padding:42px 6vw 18px}.footer-main{flex-wrap:wrap;padding-bottom:35px}.footer-links{gap:14px 35px}.footer-bottom{flex-direction:column;font-size:8px;gap:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+
+/* Interactive village explorer */
+.village-canvas{background:linear-gradient(145deg,#e8e4d8,#d8d5c8)}
+.village-canvas canvas{touch-action:pan-y;cursor:grab}
+.village-canvas canvas:active{cursor:grabbing}
+.scene-hint{z-index:2;max-width:calc(100% - 32px);line-height:1.6}
+.scene-reset{position:absolute;z-index:3;left:16px;bottom:15px;border:1px solid #c9c3b6;background:rgba(245,243,236,.92);color:#173c32;padding:7px 10px;font-size:10px;cursor:pointer}
+.scene-reset:hover{background:#173c32;color:#fff}
+.selected-place{max-width:460px;display:flex;flex-direction:column;gap:4px}
+.selected-place strong{font-size:16px;color:#173c32}
+.selected-place small{font-size:10px;color:#b8755a}
+.selected-place p{font-size:11px;line-height:1.7;color:#73756d;margin:4px 0 0}
+.product-image-wrap{background:linear-gradient(135deg,#e7e1d5,#d8d0c0)}
+.product-image-wrap img{min-height:100%;font-size:12px;color:#777}
+@media(max-width:620px){
+  .village-topline{font-size:8px;padding:12px}
+  .village-canvas{height:330px}
+  .scene-reset{left:10px;bottom:10px;font-size:9px}
+  .scene-hint{right:10px;bottom:10px;font-size:8px;max-width:55%;text-align:right}
+  .selected-place p{max-width:100%}
+}
+
+.scene-fallback{height:100%;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;color:#173c32;background:linear-gradient(145deg,#e8e4d8,#d8d5c8)}
+.scene-fallback strong{font-size:16px;font-weight:500}
+.scene-fallback span{font-size:12px;color:#73756d}
