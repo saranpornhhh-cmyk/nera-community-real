@@ -24,6 +24,16 @@ const products = [
   { name: 'น้ำผึ้งดอกไม้ป่า', en: 'Wildflower Honey', price: '฿160', category: 'อาหารท้องถิ่น', image: 'photo-1587049352851-8d4e89133924' },
 ]
 
+const learningResources = [
+  { id:'01', title:'เริ่มต้นพัฒนาชุมชนอย่างมีส่วนร่วม', category:'พื้นฐาน', level:'เริ่มต้น', summary:'เข้าใจบทบาทของคนในพื้นที่ ตั้งแต่ร่วมรับรู้ ร่วมคิด ตัดสินใจ วางแผน ลงมือทำ และติดตามผล', outcome:'นำกระบวนการมีส่วนร่วมไปออกแบบกิจกรรมชุมชนได้', source:'กรมการพัฒนาชุมชน', url:'https://plan.cdd.go.th/file/get/file/102.202506255dc01a6a46993708770d1f578e1434e7103557.pdf' },
+  { id:'02', title:'สำรวจทุน ปัญหา และข้อมูลชุมชน', category:'พื้นฐาน', level:'ลงมือทำ', summary:'เรียนรู้การเก็บข้อมูลคน กลุ่มอาชีพ ทรัพยากร ภูมิปัญญา และปัญหา เพื่อใช้กำหนดเป้าหมายจากข้อมูลจริง', outcome:'จัดทำรายการทุนชุมชนและประเด็นที่ควรพัฒนาได้', source:'สภาพัฒน์ · ฐานข้อมูลชุมชน พอช.', url:'https://sdgs.nesdc.go.th/wp-content/uploads/2025/01/article_file_20230111130039.pdf' },
+  { id:'03', title:'สร้างศูนย์เรียนรู้และถ่ายทอดภูมิปัญญา', category:'วัฒนธรรม', level:'ลงมือทำ', summary:'รวบรวมองค์ความรู้จากคนในพื้นที่ พัฒนาเป็นฐานเรียนรู้ด้านอาชีพ วัฒนธรรม เศรษฐกิจพอเพียง และสิ่งที่ชุมชนต้องการ', outcome:'ออกแบบฐานเรียนรู้ที่ชุมชนดูแลและจัดกิจกรรมได้ต่อเนื่อง', source:'กรมการพัฒนาชุมชน', url:'https://chumchon.cdd.go.th/th/file/get/file/114.202602200377231604a5bb899e140b9b95e55cdd103435.pdf' },
+  { id:'04', title:'ชุมชนท้องถิ่นจัดการตนเอง', category:'การบริหาร', level:'วิดีโอเรียนรู้', summary:'เรียนรู้บทบาทสภาองค์กรชุมชน สวัสดิการชุมชน บ้านมั่นคง และการรวมพลังเพื่อแก้ปัญหาในพื้นที่', outcome:'มองเห็นกลไกและภาคีที่สามารถร่วมขับเคลื่อนชุมชน', source:'สถาบันพัฒนาองค์กรชุมชน (พอช.)', url:'https://web.codi.or.th/e-learning/' },
+  { id:'05', title:'ออกแบบการพัฒนาที่ยั่งยืนด้วย SDGs', category:'ความยั่งยืน', level:'กรอบแนวคิด', summary:'เชื่อมโยงประเด็นชุมชนกับเป้าหมายการพัฒนาที่ยั่งยืน ทั้งด้านคน เศรษฐกิจ สิ่งแวดล้อม สันติภาพ และความร่วมมือ', outcome:'เลือกเป้าหมาย SDGs ที่สัมพันธ์กับปัญหาในพื้นที่ได้', source:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ', url:'https://sdgs.nesdc.go.th/goals-and-indicators/' },
+  { id:'06', title:'นำเป้าหมายโลกมาสู่การพัฒนาท้องถิ่น', category:'ความยั่งยืน', level:'กรณีศึกษา', summary:'ศึกษาการปรับเป้าหมาย SDGs ให้สอดคล้องกับบริบทพื้นที่และความร่วมมือของภาคส่วนต่าง ๆ ในประเทศไทย', outcome:'ตั้งโจทย์พัฒนาพื้นที่โดยไม่ทิ้งใครไว้ข้างหลัง', source:'สหประชาชาติในประเทศไทย', url:'https://thailand.un.org/th/sdgs' },
+  { id:'07', title:'เสริมศักยภาพองค์กรและเครือข่ายชุมชน', category:'การบริหาร', level:'แนวทางปฏิบัติ', summary:'ศึกษาแนวทางเพิ่มขีดความสามารถขององค์กรชุมชน การประสานภาคี และการจัดการทรัพยากรเพื่อพึ่งพาตนเอง', outcome:'วางแนวทางความร่วมมือระหว่างชุมชนกับหน่วยงานสนับสนุน', source:'สถาบันพัฒนาองค์กรชุมชน (พอช.) · แนวทางปี 2569', url:'https://web.codi.or.th/wp-content/uploads/2025/10/PT01_%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%81%E0%B8%B2%E0%B8%A8_%E0%B9%81%E0%B8%99%E0%B8%A7%E0%B8%97%E0%B8%B2%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%AA%E0%B8%99%E0%B8%B1%E0%B8%9A%E0%B8%AA%E0%B8%99%E0%B8%B8%E0%B8%99%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%80%E0%B8%AA%E0%B8%A3%E0%B8%B4%E0%B8%A1%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B8%2569.pdf' }
+]
+
 const projects = [
   { no: '01', title: 'ตลาดชุมชนมีชีวิต', en: 'A Market for Everyone', budget: '฿120,000', progress: 65, text: 'ปรับปรุงพื้นที่ค้าขายให้เป็นศูนย์กลางเศรษฐกิจและพื้นที่พบปะของคนในชุมชน' },
   { no: '02', title: 'จัดการขยะอย่างเข้าใจ', en: 'Circular Community', budget: '฿45,000', progress: 40, text: 'ส่งเสริมการคัดแยก ลดขยะ และนำทรัพยากรกลับมาใช้ประโยชน์' },
@@ -207,7 +217,7 @@ function VillageScene({ activePlace, onSelectPlace }) {
 
 function Header() {
   const [open,setOpen]=useState(false)
-  const links=[['เรื่องราว','story'],['สำรวจชุมชน','explore'],['สินค้า','products'],['โครงการ','projects'],['ข่าวสาร','stories']]
+  const links=[['เรื่องราว','story'],['สำรวจชุมชน','explore'],['แหล่งเรียนรู้','learning'],['สินค้า','products'],['โครงการ','projects'],['ข่าวสาร','stories']]
   return <header className="header">
     <a className="brand" href="#top" aria-label="NÉRA home">NÉRA<span className="brand-dot">.</span></a>
     <nav className={open?'nav nav-open':'nav'}>
@@ -279,6 +289,29 @@ function App(){
         <div className="story-feature"><img loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentElement.classList.add("image-fallback")}} src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1500&q=85" alt="สถาปัตยกรรมและพื้นที่ชุมชน"/><div className="story-overlay"><span className="kicker">FIELD NOTES / 001</span><h2>พื้นที่ธรรมดา<br/>ที่มีความหมาย</h2><p>เรื่องราวของสถานที่ ผู้คน และสิ่งเล็ก ๆ ที่ทำให้ชุมชนพิเศษ</p><a className="light-link" href="#contact">อ่านเรื่องราว <ArrowUpRight size={16}/></a></div></div>
       </section>
 
+      <section className="learning-section" id="learning">
+        <SectionLabel no="05" en="COMMUNITY LEARNING HUB"/>
+        <div className="section-heading"><div><p className="kicker">KNOWLEDGE FOR LOCAL ACTION</p><h2>เรียนรู้เพื่อพัฒนา<br/><em>ชุมชนของเรา</em></h2></div><p className="heading-note">รวมคู่มือ บทเรียน และแหล่งข้อมูลจากหน่วยงานที่เชื่อถือได้ เพื่อเปลี่ยนความรู้ให้เป็นการลงมือทำ</p></div>
+        <div className="learning-intro"><strong>เริ่มจากสิ่งที่ชุมชนมี แล้วค่อย ๆ พัฒนาสิ่งที่ชุมชนต้องการ</strong><p>เลือกหัวข้อที่สนใจ อ่านสรุปก่อน แล้วเปิดแหล่งข้อมูลต้นฉบับเพื่อศึกษาเพิ่มเติม เนื้อหาในหน้านี้เป็นบทนำและคัดสรรลิงก์จากหน่วยงานเจ้าของความรู้</p></div>
+        <div className="learning-filters" role="group" aria-label="กรองหมวดหมู่แหล่งเรียนรู้">
+          {['ทั้งหมด',...new Set(learningResources.map(item=>item.category))].map(category=><button type="button" key={category} className={selected===category?'active':''} aria-pressed={selected===category} onClick={()=>setSelected(category)}>{category}</button>)}
+        </div>
+        <div className="learning-grid">
+          {learningResources.filter(item=>selected==='ทั้งหมด'||item.category===selected).map(item=><article className="learning-card" key={item.id}>
+            <div className="learning-card-top"><span>{item.id} / LEARNING NOTE</span><span>{item.level}</span></div>
+            <span className="learning-category">{item.category}</span>
+            <h3>{item.title}</h3><p>{item.summary}</p>
+            <div className="learning-outcome"><small>สิ่งที่ได้เรียนรู้</small><strong>{item.outcome}</strong></div>
+            <div className="learning-source"><span>{item.source}</span><a href={item.url} target="_blank" rel="noopener noreferrer">เปิดแหล่งเรียนรู้ <ArrowUpRight size={15}/></a></div>
+          </article>)}
+        </div>
+        <div className="learning-method">
+          <div><p className="kicker">FROM LEARNING TO ACTION</p><h3>5 ขั้นตอนสู่แผนพัฒนาชุมชน</h3><p>ใช้เป็นแนวทางเริ่มต้นและปรับให้เหมาะกับบริบทของแต่ละพื้นที่</p></div>
+          <ol><li><strong>รับฟัง</strong><span>เปิดพื้นที่ให้ทุกกลุ่มสะท้อนความต้องการ</span></li><li><strong>สำรวจ</strong><span>รวบรวมข้อมูล ปัญหา และทุนชุมชน</span></li><li><strong>จัดลำดับ</strong><span>เลือกประเด็นสำคัญร่วมกันอย่างโปร่งใส</span></li><li><strong>ลงมือทำ</strong><span>กำหนดผู้รับผิดชอบ ทรัพยากร และเวลา</span></li><li><strong>ติดตาม</strong><span>ประเมินผล เปิดเผยความคืบหน้า และปรับแผน</span></li></ol>
+        </div>
+        <p className="learning-disclaimer">หมายเหตุ: NÉRA เป็นผู้รวบรวมและสรุปบทนำ ลิงก์จะนำไปยังเว็บไซต์หรือเอกสารของหน่วยงานต้นทาง โปรดตรวจสอบปีที่เผยแพร่และฉบับล่าสุดจากเจ้าของเอกสารก่อนนำไปใช้อ้างอิง</p>
+      </section>
+
       <section className="contact-section" id="contact">
         <SectionLabel no="06" en="LET'S CONNECT"/>
         <div className="contact-grid"><div><p className="kicker">START A CONVERSATION</p><h2>เรื่องราวดี ๆ<br/><em>เริ่มจากการพูดคุย</em></h2><p className="contact-copy">มีแนวคิด อยากร่วมพัฒนา หรืออยากรู้จักชุมชนมากขึ้น ติดต่อเราได้ที่นี่</p><div className="contact-detail"><Mail size={17}/><span>hello@nera-community.example</span></div><div className="contact-detail"><MapPin size={17}/><span>บ้านทุ่งอรุณ · ประเทศไทย (ข้อมูลตัวอย่าง)</span></div></div>
@@ -286,7 +319,7 @@ function App(){
         </div>
       </section>
     </main>
-    <footer className="footer"><div className="footer-main"><div><a className="footer-brand" href="#top">NÉRA<span>.</span></a><p>A community, connected.<br/>เชื่อมโยงคุณค่า สร้างอนาคตที่ยั่งยืน</p></div><div className="footer-links"><a href="#story">เรื่องราว</a><a href="#explore">สำรวจชุมชน</a><a href="#products">สินค้า</a><a href="#projects">โครงการ</a><a href="#contact">ติดต่อ</a></div><div className="footer-social"><a href="#contact" aria-label="Instagram"><Instagram/></a><a href="#contact" aria-label="Facebook"><Facebook/></a></div></div><div className="footer-bottom"><span>© 2026 NÉRA COMMUNITY CONNECT</span><span>DEMO PROJECT · ข้อมูลทั้งหมดเป็นข้อมูลสมมติ</span><a href="#top">BACK TO TOP ↑</a></div></footer>
+    <footer className="footer"><div className="footer-main"><div><a className="footer-brand" href="#top">NÉRA<span>.</span></a><p>A community, connected.<br/>เชื่อมโยงคุณค่า สร้างอนาคตที่ยั่งยืน</p></div><div className="footer-links"><a href="#story">เรื่องราว</a><a href="#explore">สำรวจชุมชน</a><a href="#products">สินค้า</a><a href="#projects">โครงการ</a><a href="#learning">แหล่งเรียนรู้</a><a href="#contact">ติดต่อ</a></div><div className="footer-social"><a href="#contact" aria-label="Instagram"><Instagram/></a><a href="#contact" aria-label="Facebook"><Facebook/></a></div></div><div className="footer-bottom"><span>© 2026 NÉRA COMMUNITY CONNECT</span><span>DEMO PROJECT · ข้อมูลทั้งหมดเป็นข้อมูลสมมติ</span><a href="#top">BACK TO TOP ↑</a></div></footer>
   </div>
 }
 
