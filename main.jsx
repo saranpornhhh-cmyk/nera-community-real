@@ -19,7 +19,7 @@ const community = {
 }
 
 const products = [
-  { name: 'ผ้าทอมือสีธรรมชาติ', en: 'Naturally Dyed Textile', price: '฿450', category: 'งานหัตถกรรม', image: 'photo-1604881988758-f76ad2f7add9' },
+  { name: 'ผ้าทอมือสีธรรมชาติ', en: 'Naturally Dyed Textile', price: '฿450', category: 'งานหัตถกรรม', image: 'photo-1512436991641-6745cdb1723f' },
   { name: 'ข้าวอินทรีย์ฤดูกาลใหม่', en: 'Seasonal Organic Rice', price: '฿85', category: 'เกษตรอินทรีย์', image: 'photo-1586201375761-83865001e31c' },
   { name: 'น้ำผึ้งดอกไม้ป่า', en: 'Wildflower Honey', price: '฿160', category: 'อาหารท้องถิ่น', image: 'photo-1587049352851-8d4e89133924' },
 ]
