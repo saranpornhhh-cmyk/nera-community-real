@@ -220,6 +220,8 @@ function VillageScene({ activePlace, onSelect }) {
       }
     }
     renderer.domElement.addEventListener('pointerdown',onPointer)
+    const resetView=()=>{camera.position.copy(homePosition);controls.target.set(0,0,0);controls.update()}
+    renderer.domElement.addEventListener('nera-reset',resetView)
     const resize=()=>{
       const w=host.clientWidth,h=host.clientHeight
       if(!w||!h)return
@@ -242,6 +244,7 @@ function VillageScene({ activePlace, onSelect }) {
     return ()=>{
       cancelAnimationFrame(raf);observer?.disconnect()
       renderer.domElement.removeEventListener('pointerdown',onPointer)
+      renderer.domElement.removeEventListener('nera-reset',resetView)
       controls.dispose();renderer.dispose()
       if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement)
       scene.traverse(o=>{
@@ -252,7 +255,7 @@ function VillageScene({ activePlace, onSelect }) {
   },[])
   return <div className="village-canvas" ref={mountRef}>
     <span className="scene-hint">แตะหมุดเพื่อดูสถานที่ · ลากเพื่อหมุน · ซูมเพื่อสำรวจ</span>
-    <button className="scene-reset" type="button" onClick={()=>{const canvas=mountRef.current?.querySelector('canvas');if(canvas)canvas.dispatchEvent(new CustomEvent('nera-reset'))}}>3D VIEW</button>
+    <button className="scene-reset" type="button" onClick={()=>{const canvas=mountRef.current?.querySelector('canvas');if(canvas)canvas.dispatchEvent(new Event('nera-reset'))}}>มุมมองเริ่มต้น ↺</button>
   </div>
 }
 
@@ -322,7 +325,7 @@ function App(){
       <section className="identity-section" id="products">
         <SectionLabel no="03" en="LOCAL IDENTITY"/>
         <div className="section-heading"><div><p className="kicker">MADE WITH MEANING</p><h2>คุณค่าจากท้องถิ่น<br/><em>ส่งต่อถึงทุกคน</em></h2></div><a className="under-link" href="#contact">รู้จักสินค้าชุมชน <ArrowUpRight size={16}/></a></div>
-        <div className="product-grid">{products.map((p,i)=><article className={`product product-${i+1}`} key={p.name}><div className="product-image-wrap"><img src={`https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=900&q=80`} alt={p.name}/><span className="product-number">0{i+1}</span></div><div className="product-meta"><span>{p.category}</span><span>{p.price}</span></div><h3>{p.name}</h3><p>{p.en}</p></article>)}</div>
+        <div className="product-grid">{products.map((p,i)=><article className={`product product-${i+1}`} key={p.name}><div className="product-image-wrap"><img src={`https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=900&q=80`} alt={p.name} loading="lazy" onError={e=>{e.currentTarget.style.display='none'}}/><span className="product-number">0{i+1}</span></div><div className="product-meta"><span>{p.category}</span><span>{p.price}</span></div><h3>{p.name}</h3><p>{p.en}</p></article>)}</div>
       </section>
 
       <section className="projects-section" id="projects">
