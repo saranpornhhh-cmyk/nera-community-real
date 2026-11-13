@@ -30,7 +30,7 @@ const projects = [
   { no: '03', title: 'พื้นที่เรียนรู้ร่วมกัน', en: 'Shared Learning Space', budget: '฿80,000', progress: 85, text: 'สร้างพื้นที่แลกเปลี่ยนทักษะ ภูมิปัญญา และกิจกรรมสำหรับทุกวัย' },
 ]
 
-function VillageScene() {
+function VillageScene({ activePlace }) {
   const mountRef = useRef(null)
   useEffect(() => {
     const host = mountRef.current
@@ -41,7 +41,9 @@ function VillageScene() {
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
     camera.position.set(10, 11, 13)
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75))
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.12
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
     renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -100,10 +102,40 @@ function VillageScene() {
       if(Math.abs(x)<1.1 || (Math.abs(z-1.1)<.7 && Math.abs(x)<6.5)) continue
       tree(x,z,.65+Math.random()*.45)
     }
+    // Crop plots, a footpath and fencing give the village map more detail.
+    const fieldMat = new THREE.MeshStandardMaterial({ color:'#b9b58a', roughness:1 })
+    const field = new THREE.Mesh(new THREE.PlaneGeometry(4.2,3.0), fieldMat)
+    field.rotation.x=-Math.PI/2; field.position.set(3.9,.006,3.35); field.receiveShadow=true; scene.add(field)
+    const cropMat = new THREE.MeshStandardMaterial({ color:'#78875a', roughness:1 })
+    for(let row=0;row<9;row++){
+      const crop = new THREE.Mesh(new THREE.BoxGeometry(3.65,.07,.035), cropMat)
+      crop.position.set(3.9,.055,2.2+row*.29); crop.castShadow=true; scene.add(crop)
+    }
+    const pathMat = new THREE.MeshStandardMaterial({ color:'#c7b89d', roughness:1 })
+    const path = new THREE.Mesh(new THREE.BoxGeometry(.55,.035,4.2),pathMat)
+    path.position.set(-1.9,-.02,3.15); scene.add(path)
+    const fenceMat = new THREE.MeshStandardMaterial({color:'#8b7457',roughness:1})
+    for(let i=0;i<8;i++){
+      const post = new THREE.Mesh(new THREE.BoxGeometry(.07,.42,.07),fenceMat)
+      post.position.set(-5.1+i*.42,.18,3.8); post.castShadow=true; scene.add(post)
+    }
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(3.0,.06,.06),fenceMat)
+    rail.position.set(-3.65,.27,3.8); scene.add(rail)
+
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping=true; controls.enablePan=false
     controls.minDistance=10; controls.maxDistance=25
     controls.maxPolarAngle=Math.PI/2.05
+    const placeFocus = {
+      'ศูนย์ชุมชน': [4.5, 0, -2.1],
+      'ตลาดท้องถิ่น': [-3.4, 0, -3.1],
+      'พื้นที่เกษตร': [3.9, 0, 3.35],
+      'แหล่งเรียนรู้': [-4.2, 0, 2.8]
+    }
+    const focus = placeFocus[activePlace] || [0,0,0]
+    controls.target.set(focus[0], .25, focus[2])
+    camera.position.set(focus[0]+8, 8.5, focus[2]+9)
+    controls.update()
     const resize = () => {
       const w=host.clientWidth, h=host.clientHeight
       if(!w||!h) return
@@ -113,7 +145,7 @@ function VillageScene() {
     const animate=()=>{ frame=requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera) }
     animate()
     return ()=>{ cancelAnimationFrame(frame); observer?.disconnect(); controls.dispose(); renderer.dispose(); host.removeChild(renderer.domElement); scene.traverse(o=>{o.geometry?.dispose(); if(o.material){Array.isArray(o.material)?o.material.forEach(m=>m.dispose()):o.material.dispose()}}) }
-  }, [])
+  }, [activePlace])
   return <div className="village-canvas" ref={mountRef}><span className="scene-hint">DRAG TO EXPLORE · ลากเพื่อหมุนมุมมอง</span></div>
 }
 
@@ -151,7 +183,7 @@ function App(){
           <div className="hero-index"><span>01 / 08</span><span>บ้านทุ่งอรุณ · ประเทศไทย</span></div>
         </div>
         <div className="hero-visual">
-          <img className="hero-image" src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1600&q=85" alt="ทิวทัศน์พื้นที่เกษตรและชุมชน" />
+          <img className="hero-image" fetchPriority="high" onError={e=>{e.currentTarget.style.display='none';e.currentTarget.parentElement.classList.add('image-fallback')}} src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1600&q=85" alt="ทิวทัศน์พื้นที่เกษตรและชุมชน" />
           <div className="image-caption"><span>FIG. 01</span><span>LANDSCAPE & LIVING</span></div>
           <div className="hero-stamp"><span>LOCAL</span><span>ROOTS</span><span>GLOBAL</span><span>FUTURE</span></div>
         </div>
@@ -171,13 +203,13 @@ function App(){
       <section className="explore-section" id="explore">
         <SectionLabel no="02" en="EXPLORE THE VILLAGE"/>
         <div className="section-heading"><div><p className="kicker">A PLACE TO DISCOVER</p><h2>สำรวจพื้นที่<br/><em>ในมุมมองใหม่</em></h2></div><p className="heading-note">มองเห็นความเชื่อมโยงของสถานที่ ผู้คน และทรัพยากร ผ่านแผนที่ชุมชนสามมิติ</p></div>
-        <div className="village-frame"><div className="village-topline"><span>COMMUNITY MAP / 001</span><span>INTERACTIVE 3D MODEL</span></div><VillageScene/><div className="village-bottom"><div><span className="tiny-label">SELECTED LOCATION</span><strong>{activePlace}</strong></div><div className="place-pills">{places.map(p=><button className={activePlace===p?'active':''} onClick={()=>setActivePlace(p)} key={p}>{p}</button>)}</div></div></div>
+        <div className="village-frame"><div className="village-topline"><span>COMMUNITY MAP / 001</span><span>INTERACTIVE 3D MODEL</span></div><VillageScene activePlace={activePlace}/><div className="village-bottom"><div><span className="tiny-label">SELECTED LOCATION</span><strong>{activePlace}</strong></div><div className="place-pills">{places.map(p=><button className={activePlace===p?'active':''} onClick={()=>setActivePlace(p)} key={p}>{p}</button>)}</div></div></div>
       </section>
 
       <section className="identity-section" id="products">
         <SectionLabel no="03" en="LOCAL IDENTITY"/>
         <div className="section-heading"><div><p className="kicker">MADE WITH MEANING</p><h2>คุณค่าจากท้องถิ่น<br/><em>ส่งต่อถึงทุกคน</em></h2></div><a className="under-link" href="#contact">รู้จักสินค้าชุมชน <ArrowUpRight size={16}/></a></div>
-        <div className="product-grid">{products.map((p,i)=><article className={`product product-${i+1}`} key={p.name}><div className="product-image-wrap"><img src={`https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=900&q=80`} alt={p.name}/><span className="product-number">0{i+1}</span></div><div className="product-meta"><span>{p.category}</span><span>{p.price}</span></div><h3>{p.name}</h3><p>{p.en}</p></article>)}</div>
+        <div className="product-grid">{products.map((p,i)=><article className={`product product-${i+1}`} key={p.name}><div className="product-image-wrap"><img loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentElement.classList.add("image-fallback")}} src={`https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=900&q=80`} alt={p.name}/><span className="product-number">0{i+1}</span></div><div className="product-meta"><span>{p.category}</span><span>{p.price}</span></div><h3>{p.name}</h3><p>{p.en}</p></article>)}</div>
       </section>
 
       <section className="projects-section" id="projects">
@@ -188,7 +220,7 @@ function App(){
 
       <section className="stories-section" id="stories">
         <SectionLabel no="05" en="PLACES & STORIES"/>
-        <div className="story-feature"><img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1500&q=85" alt="สถาปัตยกรรมและพื้นที่ชุมชน"/><div className="story-overlay"><span className="kicker">FIELD NOTES / 001</span><h2>พื้นที่ธรรมดา<br/>ที่มีความหมาย</h2><p>เรื่องราวของสถานที่ ผู้คน และสิ่งเล็ก ๆ ที่ทำให้ชุมชนพิเศษ</p><a className="light-link" href="#contact">อ่านเรื่องราว <ArrowUpRight size={16}/></a></div></div>
+        <div className="story-feature"><img loading="lazy" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentElement.classList.add("image-fallback")}} src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1500&q=85" alt="สถาปัตยกรรมและพื้นที่ชุมชน"/><div className="story-overlay"><span className="kicker">FIELD NOTES / 001</span><h2>พื้นที่ธรรมดา<br/>ที่มีความหมาย</h2><p>เรื่องราวของสถานที่ ผู้คน และสิ่งเล็ก ๆ ที่ทำให้ชุมชนพิเศษ</p><a className="light-link" href="#contact">อ่านเรื่องราว <ArrowUpRight size={16}/></a></div></div>
       </section>
 
       <section className="contact-section" id="contact">
