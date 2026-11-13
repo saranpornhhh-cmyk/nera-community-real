@@ -20,3 +20,10 @@ section:not(.hero){padding:90px 9vw}.section-label{display:flex;gap:17px;align-i
 .story-feature.image-fallback{background:linear-gradient(120deg,#173c32,#7e9274 60%,#c49a72)}
 .story-feature.image-fallback::after{content:"NÉRA · COMMUNITY STORIES";position:absolute;right:7%;bottom:8%;z-index:1;color:#fff;font:10px "DM Sans",sans-serif;letter-spacing:2px}
 @media(max-width:620px){.hero-visual.image-fallback{min-height:310px}}
+
+
+/* Accessibility and graceful 3D fallback. */
+.village-fallback{height:100%;min-height:220px;display:grid;place-items:center;text-align:center;padding:28px;color:var(--green);font-size:14px;line-height:1.9;background:linear-gradient(135deg,#e6dfcf,#d6dfd1)}
+:focus-visible{outline:2px solid var(--clay);outline-offset:4px}
+button,a{-webkit-tap-highlight-color:transparent}
+@media(hover:none){.product:hover img{transform:none}}
