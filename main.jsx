@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import {
   ArrowDownRight, ArrowUpRight, Menu, X, MapPin, MoveUpRight,
   Sprout, Users, House, Leaf, ShoppingBag, CalendarDays, Mail,
@@ -40,8 +38,19 @@ function VillageScene({ activePlace, onSelect }) {
   useEffect(() => {
     const host = mountRef.current
     if (!host) return
-    let renderer, raf, observer
-    const scene = new THREE.Scene()
+    let cancelled = false
+    let cleanup = () => {}
+    ;(async () => {
+      try {
+        // Load the heavy 3D engine after the main page has rendered.
+        const [THREE, controlsModule] = await Promise.all([
+          import('three'),
+          import('three/examples/jsm/controls/OrbitControls.js')
+        ])
+        if (cancelled) return
+        const { OrbitControls } = controlsModule
+        let renderer, raf, observer
+        const scene = new THREE.Scene()
     scene.background = new THREE.Color('#e9e6dc')
     scene.fog = new THREE.Fog('#e9e6dc', 23, 42)
     const camera = new THREE.PerspectiveCamera(38, 1, .1, 100)
@@ -177,7 +186,7 @@ function VillageScene({ activePlace, onSelect }) {
       const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128
       const ctx=canvas.getContext('2d')
       ctx.fillStyle='rgba(23,60,50,.92)'
-      ctx.beginPath();ctx.roundRect(8,8,496,112,24);ctx.fill()
+      ctx.fillRect(8,8,496,112)
       ctx.fillStyle='#fffaf0';ctx.font='bold 38px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,64)
       const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace
       const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false}))
@@ -227,7 +236,12 @@ function VillageScene({ activePlace, onSelect }) {
       if(!w||!h)return
       camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)
     }
-    observer=new ResizeObserver(resize);observer.observe(host);resize()
+    if (typeof ResizeObserver !== 'undefined') {
+      observer=new ResizeObserver(resize);observer.observe(host)
+    } else {
+      window.addEventListener('resize', resize)
+    }
+    resize()
     const animate=()=>{
       raf=requestAnimationFrame(animate)
       const active=activeRef.current
@@ -241,8 +255,9 @@ function VillageScene({ activePlace, onSelect }) {
       controls.update();renderer.render(scene,camera)
     }
     animate()
-    return ()=>{
+        cleanup = () => {
       cancelAnimationFrame(raf);observer?.disconnect()
+      window.removeEventListener('resize', resize)
       renderer.domElement.removeEventListener('pointerdown',onPointer)
       renderer.domElement.removeEventListener('nera-reset',resetView)
       controls.dispose();renderer.dispose()
@@ -251,7 +266,15 @@ function VillageScene({ activePlace, onSelect }) {
         o.geometry?.dispose()
         if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{m.map?.dispose();m.dispose()})}
       })
-    }
+        }
+      } catch (error) {
+        console.error('NÉRA 3D viewer unavailable:', error)
+        if (!cancelled && host) {
+          host.innerHTML = '<div class="scene-fallback"><strong>แผนที่ 3D ยังไม่พร้อมใช้งาน</strong><span>คุณยังสามารถเลือกสถานที่จากปุ่มด้านล่างได้</span></div>'
+        }
+      }
+    })()
+    return () => { cancelled = true; cleanup() }
   },[])
   return <div className="village-canvas" ref={mountRef}>
     <span className="scene-hint">แตะหมุดเพื่อดูสถานที่ · ลากเพื่อหมุน · ซูมเพื่อสำรวจ</span>
