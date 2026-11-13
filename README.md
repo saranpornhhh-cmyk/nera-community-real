@@ -1,41 +1,53 @@
-# NÉRA — Community Connect
+# NÉRA — A community, connected.
 
-Premium editorial-style community development demo, built with React, Vite and a lightweight Three.js village scene.
+เว็บไซต์ต้นแบบแพลตฟอร์มพัฒนาชุมชน สร้างด้วย React, Vite และ Three.js โดยออกแบบให้ใช้งานได้ทั้งคอมพิวเตอร์ แท็บเล็ต และโทรศัพท์
 
-## Local development
+## เปิดเว็บไซต์
+
+https://saranpornhhh-cmyk.github.io/nera-community-real/
+
+## พัฒนาด้วยเครื่องของคุณ
+
+ต้องใช้ Node.js 20 ขึ้นไป
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
+## ตรวจสอบก่อนเผยแพร่
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## GitHub Pages
+## การเผยแพร่ GitHub Pages
 
-This project is configured for a repository named `nera-community`:
+โปรเจกต์ใช้ GitHub Actions ที่ `.github/workflows/deploy.yml` และตั้งค่า Vite ให้ใช้ relative asset paths แล้ว
 
-- Vite base path: `/nera-community/`
-- GitHub Actions workflow: `.github/workflows/deploy.yml`
+1. เปิดแท็บ **Settings → Pages**
+2. ตั้ง **Build and deployment → Source** เป็น **GitHub Actions**
+3. Push การเปลี่ยนแปลงไปยัง branch `main` หรือเรียก workflow ด้วยตนเอง
+4. ตรวจสอบผลที่แท็บ **Actions** ให้ Build และ Deploy สำเร็จ
 
-1. Create a **Public** repository named `nera-community`.
-2. Upload the contents of this folder to the repository root (not the enclosing ZIP).
-3. Commit to the `main` branch.
-4. In **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**.
-5. Open the **Actions** tab and wait for the deployment workflow to finish.
-6. Your site will be available at `https://YOUR-USERNAME.github.io/nera-community/`.
+## ส่วนประกอบหลัก
 
-## Demo data
+- หน้าแนะนำชุมชนและเรื่องราว
+- แผนที่ชุมชน 3D สร้างด้วย Three.js พร้อมหมุดชื่อสถานที่และการเลือกจุดสำรวจ
+- แสดงภาพสำรองเมื่อภาพจากผู้ให้บริการภายนอกโหลดไม่ได้
+- ส่วนสินค้า โครงการ และข่าวสารตัวอย่าง
+- แบบฟอร์มติดต่อสาธิต พร้อมแจ้งชัดเจนว่ายังไม่ได้เชื่อมต่อเซิร์ฟเวอร์
 
-All people, locations, prices, project budgets and statistics are fictional demonstration content. Replace the data in `src/main.jsx` before using this site for a real community.
+## ก่อนนำไปใช้กับชุมชนจริง
 
-## Notes
+**ข้อมูลทั้งหมดในเวอร์ชันนี้เป็นข้อมูลสมมติ** รวมถึงชื่อชุมชน จำนวนประชากร สถานที่ สินค้า ราคา งบประมาณ และความคืบหน้าโครงการ โปรดแทนที่ด้วยข้อมูลที่ได้รับอนุญาตจากชุมชนก่อนเผยแพร่ใช้งานจริง
 
-- The 3D scene is intentionally lightweight and uses procedural Three.js geometry.
-- Google Fonts and the Unsplash hero image require an internet connection.
-- No API keys or private credentials are required.
+แบบฟอร์มติดต่อยังไม่ส่งข้อมูลออกจากอุปกรณ์ ต้องเชื่อมต่อ backend หรือบริการรับฟอร์มที่เชื่อถือได้ก่อนใช้งานจริง และควรเพิ่มนโยบายความเป็นส่วนตัวกับการแจ้งวัตถุประสงค์การเก็บข้อมูล
+
+## หมายเหตุทางเทคนิค
+
+- โมเดล 3D เป็นฉากจำลองจาก geometry ที่สร้างด้วยโค้ด ไม่ใช่การสแกนพื้นที่จริงหรือข้อมูล GIS
+- ภาพและ Google Fonts บางส่วนโหลดจากบริการภายนอก จึงต้องใช้อินเทอร์เน็ต
+- หากอุปกรณ์ไม่รองรับ WebGL จะมีข้อความแจ้งแทนพื้นที่ 3D
+- ไม่มี API key หรือรหัสลับอยู่ใน source code
