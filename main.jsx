@@ -40,8 +40,16 @@ function VillageScene({ activePlace }) {
     scene.background = new THREE.Color('#e9e6dc')
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
     camera.position.set(10, 11, 13)
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75))
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' })
+    } catch (error) {
+      const fallback = document.createElement('div')
+      fallback.className = 'village-fallback'
+      fallback.textContent = 'อุปกรณ์นี้ไม่รองรับการแสดงผล 3D · สามารถเลือกสถานที่จากปุ่มด้านล่างได้'
+      host.appendChild(fallback)
+      return () => { host.replaceChildren() }
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.12
     renderer.shadowMap.enabled = true
@@ -73,10 +81,12 @@ function VillageScene({ activePlace }) {
     const green = ['#758b68', '#879a76', '#607c60']
     const treeMat = green.map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 1 }))
     const trunkMat = new THREE.MeshStandardMaterial({ color: '#80644b' })
+    let randomSeed = 2026
+    const random = () => { randomSeed = (randomSeed * 1664525 + 1013904223) % 4294967296; return randomSeed / 4294967296 }
     function tree(x, z, scale=1) {
       const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.07*scale,.1*scale,.55*scale,6), trunkMat)
       trunk.position.set(x,.18*scale,z); trunk.castShadow=true; scene.add(trunk)
-      const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(.43*scale,1), treeMat[Math.floor(Math.random()*treeMat.length)])
+      const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(.43*scale,1), treeMat[Math.floor(random()*treeMat.length)])
       crown.position.set(x,.65*scale,z); crown.castShadow=true; scene.add(crown)
     }
     function house(x,z,roof='#a96f55',scale=1) {
@@ -98,9 +108,9 @@ function VillageScene({ activePlace }) {
     const pond = new THREE.Mesh(new THREE.CircleGeometry(1.05,32), new THREE.MeshStandardMaterial({color:'#8eaaa3', roughness:.28, metalness:.08}))
     pond.rotation.x=-Math.PI/2; pond.scale.set(1.4,.72,1); pond.position.set(-4.4,.0,-1.2); scene.add(pond)
     for(let i=0;i<24;i++){
-      const x=(Math.random()-.5)*12, z=(Math.random()-.5)*9
+      const x=(random()-.5)*12, z=(random()-.5)*9
       if(Math.abs(x)<1.1 || (Math.abs(z-1.1)<.7 && Math.abs(x)<6.5)) continue
-      tree(x,z,.65+Math.random()*.45)
+      tree(x,z,.65+random()*.45)
     }
     // Crop plots, a footpath and fencing give the village map more detail.
     const fieldMat = new THREE.MeshStandardMaterial({ color:'#b9b58a', roughness:1 })
@@ -133,6 +143,34 @@ function VillageScene({ activePlace }) {
       'แหล่งเรียนรู้': [-4.2, 0, 2.8]
     }
     const focus = placeFocus[activePlace] || [0,0,0]
+    // Clearly labelled 3D location markers make the map easier to understand.
+    const markerData = [
+      ['ศูนย์ชุมชน', 4.5, -2.1], ['ตลาดท้องถิ่น', -3.4, -3.1],
+      ['พื้นที่เกษตร', 3.9, 3.35], ['แหล่งเรียนรู้', -4.2, 2.8]
+    ]
+    markerData.forEach(([label, x, z]) => {
+      const selected = label === activePlace
+      const pin = new THREE.Group()
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.62,8), new THREE.MeshStandardMaterial({ color: selected ? '#b8755a' : '#526d5d' }))
+      stem.position.y = .62; pin.add(stem)
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(selected ? .14 : .1, 16, 12), new THREE.MeshStandardMaterial({ color: selected ? '#b8755a' : '#173c32', roughness: .4 }))
+      dot.position.y = 1; pin.add(dot)
+      const labelCanvas = document.createElement('canvas')
+      labelCanvas.width = 512; labelCanvas.height = 128
+      const ctx = labelCanvas.getContext('2d')
+      ctx.fillStyle = selected ? '#173c32' : '#f5f3ec'
+      ctx.fillRect(0, 0, 512, 128)
+      ctx.fillStyle = selected ? '#ffffff' : '#173c32'
+      ctx.font = 'bold 42px sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText(label, 256, 64)
+      const texture = new THREE.CanvasTexture(labelCanvas)
+      texture.colorSpace = THREE.SRGBColorSpace
+      const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }))
+      tag.scale.set(selected ? 2.25 : 1.85, selected ? .56 : .46, 1)
+      tag.position.y = 1.55; pin.add(tag)
+      pin.position.set(x, .08, z); scene.add(pin)
+    })
     controls.target.set(focus[0], .25, focus[2])
     camera.position.set(focus[0]+8, 8.5, focus[2]+9)
     controls.update()
@@ -141,6 +179,9 @@ function VillageScene({ activePlace }) {
       if(!w||!h) return
       camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h)
     }
+    renderer.domElement.setAttribute('aria-label', 'แผนที่ชุมชนสามมิติ สามารถลากเพื่อหมุนและใช้สองนิ้วเพื่อซูม')
+    renderer.domElement.setAttribute('role', 'img')
+    renderer.domElement.style.touchAction = 'none'
     observer = new ResizeObserver(resize); observer.observe(host); resize()
     const animate=()=>{ frame=requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera) }
     animate()
@@ -226,7 +267,7 @@ function App(){
       <section className="contact-section" id="contact">
         <SectionLabel no="06" en="LET'S CONNECT"/>
         <div className="contact-grid"><div><p className="kicker">START A CONVERSATION</p><h2>เรื่องราวดี ๆ<br/><em>เริ่มจากการพูดคุย</em></h2><p className="contact-copy">มีแนวคิด อยากร่วมพัฒนา หรืออยากรู้จักชุมชนมากขึ้น ติดต่อเราได้ที่นี่</p><div className="contact-detail"><Mail size={17}/><span>hello@nera-community.example</span></div><div className="contact-detail"><MapPin size={17}/><span>บ้านทุ่งอรุณ · ประเทศไทย (ข้อมูลตัวอย่าง)</span></div></div>
-          <form className="contact-form" onSubmit={submit}><label>ชื่อ / NAME<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="ชื่อของคุณ"/></label><label>อีเมล / EMAIL<input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="you@example.com"/></label><label>ข้อความ / MESSAGE<textarea required rows="4" value={form.message} onChange={e=>setForm({...form,message:e.target.value})} placeholder="เล่าให้เราฟังว่าคุณสนใจเรื่องใด..."/></label><button className="button button-dark" type="submit">ส่งข้อความ <ArrowUpRight size={17}/></button>{sent&&<p className="form-success">ขอบคุณสำหรับข้อความนี้ — นี่คือแบบฟอร์มสาธิต ยังไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์</p>}</form>
+          <form className="contact-form" onSubmit={submit}><label>ชื่อ / NAME<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="ชื่อของคุณ"/></label><label>อีเมล / EMAIL<input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="you@example.com"/></label><label>ข้อความ / MESSAGE<textarea required rows="4" value={form.message} onChange={e=>setForm({...form,message:e.target.value})} placeholder="เล่าให้เราฟังว่าคุณสนใจเรื่องใด..."/></label><button className="button button-dark" type="submit">ทดสอบแบบฟอร์ม <ArrowUpRight size={17}/></button>{sent&&<p className="form-success" role="status" aria-live="polite">ตรวจสอบข้อมูลเรียบร้อยแล้ว · แบบฟอร์มนี้ยังเป็นตัวอย่างและยังไม่ได้ส่งข้อมูลไปยังเซิร์ฟเวอร์</p>}</form>
         </div>
       </section>
     </main>
