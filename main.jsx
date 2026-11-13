@@ -19,7 +19,7 @@ const community = {
 }
 
 const products = [
-  { name: 'ผ้าทอมือสีธรรมชาติ', en: 'Naturally Dyed Textile', price: '฿450', category: 'งานหัตถกรรม', image: 'photo-1604881988758-f76ad2f7add9' },
+  { name: 'ผ้าทอมือสีธรรมชาติ', en: 'Naturally Dyed Textile', price: '฿450', category: 'งานหัตถกรรม', image: 'photo-1528459801416-a9e53bbf4e17' },
   { name: 'ข้าวอินทรีย์ฤดูกาลใหม่', en: 'Seasonal Organic Rice', price: '฿85', category: 'เกษตรอินทรีย์', image: 'photo-1586201375761-83865001e31c' },
   { name: 'น้ำผึ้งดอกไม้ป่า', en: 'Wildflower Honey', price: '฿160', category: 'อาหารท้องถิ่น', image: 'photo-1587049352851-8d4e89133924' },
 ]
@@ -30,91 +30,230 @@ const projects = [
   { no: '03', title: 'พื้นที่เรียนรู้ร่วมกัน', en: 'Shared Learning Space', budget: '฿80,000', progress: 85, text: 'สร้างพื้นที่แลกเปลี่ยนทักษะ ภูมิปัญญา และกิจกรรมสำหรับทุกวัย' },
 ]
 
-function VillageScene() {
+function VillageScene({ activePlace, onSelect }) {
   const mountRef = useRef(null)
+  const selectRef = useRef(onSelect)
+  const activeRef = useRef(activePlace)
+  useEffect(() => { selectRef.current = onSelect }, [onSelect])
+  useEffect(() => { activeRef.current = activePlace }, [activePlace])
+
   useEffect(() => {
     const host = mountRef.current
     if (!host) return
-    let renderer, frame, observer
+    let renderer, raf, observer
     const scene = new THREE.Scene()
     scene.background = new THREE.Color('#e9e6dc')
-    const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
-    camera.position.set(10, 11, 13)
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6))
+    scene.fog = new THREE.Fog('#e9e6dc', 23, 42)
+    const camera = new THREE.PerspectiveCamera(38, 1, .1, 100)
+    const homePosition = new THREE.Vector3(12, 13, 15)
+    camera.position.copy(homePosition)
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' })
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
     renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.12
     host.appendChild(renderer.domElement)
 
-    scene.add(new THREE.HemisphereLight('#fff8e9', '#718276', 2.1))
-    const sun = new THREE.DirectionalLight('#fff1d6', 2.5)
-    sun.position.set(7, 12, 6)
+    scene.add(new THREE.HemisphereLight('#fff8e9', '#718276', 2.0))
+    const sun = new THREE.DirectionalLight('#fff1d6', 2.6)
+    sun.position.set(8, 15, 9)
     sun.castShadow = true
-    sun.shadow.mapSize.set(1024, 1024)
+    sun.shadow.mapSize.set(1536, 1536)
+    sun.shadow.camera.left = -12
+    sun.shadow.camera.right = 12
+    sun.shadow.camera.top = 12
+    sun.shadow.camera.bottom = -12
     scene.add(sun)
 
-    const groundMat = new THREE.MeshStandardMaterial({ color: '#d7d1bd', roughness: 1 })
-    const ground = new THREE.Mesh(new THREE.BoxGeometry(14, .25, 11), groundMat)
-    ground.position.y = -.18
+    const mat = (color, roughness=.9) => new THREE.MeshStandardMaterial({ color, roughness })
+    const ground = new THREE.Mesh(new THREE.BoxGeometry(17, .3, 14), mat('#d8d0ba'))
+    ground.position.y = -.2
     ground.receiveShadow = true
     scene.add(ground)
 
-    const roadMat = new THREE.MeshStandardMaterial({ color: '#b8ad98', roughness: 1 })
-    const road = new THREE.Mesh(new THREE.BoxGeometry(1.1, .025, 10.8), roadMat)
-    road.position.set(0, -.035, 0)
-    scene.add(road)
-    const crossRoad = new THREE.Mesh(new THREE.BoxGeometry(13.8, .03, .8), roadMat)
-    crossRoad.position.set(0, -.025, 1.1)
-    scene.add(crossRoad)
+    // Soft green spaces and planted fields
+    const grass = mat('#a9b18a')
+    const grass2 = mat('#c0bd91')
+    ;[[-5,-4,3.2,2.4], [5,-4,3.4,2.2], [-5,4,3.2,2.2], [5,4,3.2,2.2]].forEach(([x,z,w,d],i)=>{
+      const patch = new THREE.Mesh(new THREE.BoxGeometry(w,.035,d), i%2?grass:grass2)
+      patch.position.set(x,-.025,z); patch.receiveShadow=true; scene.add(patch)
+    })
 
-    const green = ['#758b68', '#879a76', '#607c60']
-    const treeMat = green.map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 1 }))
-    const trunkMat = new THREE.MeshStandardMaterial({ color: '#80644b' })
-    function tree(x, z, scale=1) {
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.07*scale,.1*scale,.55*scale,6), trunkMat)
-      trunk.position.set(x,.18*scale,z); trunk.castShadow=true; scene.add(trunk)
-      const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(.43*scale,1), treeMat[Math.floor(Math.random()*treeMat.length)])
-      crown.position.set(x,.65*scale,z); crown.castShadow=true; scene.add(crown)
+    // Village roads with small shoulders
+    const roadMat = mat('#b9ad96')
+    const shoulder = mat('#d5c8ac')
+    function road(w,d,x,z) {
+      const edge = new THREE.Mesh(new THREE.BoxGeometry(w+.16,.035,d+.16), shoulder)
+      edge.position.set(x,-.035,z); scene.add(edge)
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,.045,d), roadMat)
+      mesh.position.set(x,-.005,z); mesh.receiveShadow=true; scene.add(mesh)
     }
-    function house(x,z,roof='#a96f55',scale=1) {
-      const wall = new THREE.Mesh(new THREE.BoxGeometry(1.15*scale,.8*scale,.95*scale), new THREE.MeshStandardMaterial({color:'#eee5d3', roughness:.9}))
-      wall.position.set(x,.42*scale,z); wall.castShadow=true; wall.receiveShadow=true; scene.add(wall)
-      const top = new THREE.Mesh(new THREE.ConeGeometry(.92*scale,.58*scale,4), new THREE.MeshStandardMaterial({color:roof, roughness:.85}))
-      top.rotation.y=Math.PI/4; top.position.set(x,.99*scale,z); top.castShadow=true; scene.add(top)
-      const door = new THREE.Mesh(new THREE.BoxGeometry(.17*scale,.38*scale,.025), new THREE.MeshStandardMaterial({color:'#6a5948'}))
-      door.position.set(x,.2*scale,z+.49*scale); scene.add(door)
+    road(1.15,13.6,0,0)
+    road(16.4,1.05,0,1.15)
+    road(1.0,6.0,-5.0,-3.6)
+    road(1.0,5.6,5.0,4.0)
+
+    // Buildings: Thai-inspired homes, market stalls and learning centre
+    const wallMat = mat('#eee5d3')
+    const darkWood = mat('#765b43')
+    const roofMats = [mat('#a9684e'),mat('#8c7257'),mat('#9b5947')]
+    function house(x,z,scale=1,roofIndex=0) {
+      const g = new THREE.Group()
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.15*scale,.78*scale,.95*scale),wallMat)
+      body.position.y=.43*scale; body.castShadow=true; body.receiveShadow=true; g.add(body)
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(.91*scale,.56*scale,4),roofMats[roofIndex])
+      roof.rotation.y=Math.PI/4; roof.position.y=1.08*scale; roof.castShadow=true; g.add(roof)
+      const door = new THREE.Mesh(new THREE.BoxGeometry(.19*scale,.38*scale,.035),darkWood)
+      door.position.set(0,.2*scale,.49*scale); g.add(door)
+      const windowMat=mat('#9eb5ae',.45)
+      ;[-.34,.34].forEach(wx=>{const win=new THREE.Mesh(new THREE.BoxGeometry(.2*scale,.19*scale,.025),windowMat);win.position.set(wx,.56*scale,.49*scale);g.add(win)})
+      g.position.set(x,0,z); scene.add(g)
     }
-    house(-3.4,-3.1); house(2.6,-3.3,'#8c775e'); house(4.2,.1,'#a96f55',.9)
-    house(-4.2,2.8,'#8b6d53',.9); house(2.7,3.3,'#a96f55',.85); house(-2.6,.1,'#8c775e',.8)
-    // Community hall
-    const hall = new THREE.Mesh(new THREE.BoxGeometry(1.8,.95,1.35), new THREE.MeshStandardMaterial({color:'#d8c7a7'}))
-    hall.position.set(4.5,-.0,-2.1); hall.castShadow=true; scene.add(hall)
-    const hallRoof = new THREE.Mesh(new THREE.ConeGeometry(1.35,.65,4), new THREE.MeshStandardMaterial({color:'#6c8065'}))
-    hallRoof.rotation.y=Math.PI/4; hallRoof.position.set(4.5,.75,-2.1); hallRoof.castShadow=true; scene.add(hallRoof)
-    // Pond
-    const pond = new THREE.Mesh(new THREE.CircleGeometry(1.05,32), new THREE.MeshStandardMaterial({color:'#8eaaa3', roughness:.28, metalness:.08}))
-    pond.rotation.x=-Math.PI/2; pond.scale.set(1.4,.72,1); pond.position.set(-4.4,.0,-1.2); scene.add(pond)
-    for(let i=0;i<24;i++){
-      const x=(Math.random()-.5)*12, z=(Math.random()-.5)*9
-      if(Math.abs(x)<1.1 || (Math.abs(z-1.1)<.7 && Math.abs(x)<6.5)) continue
-      tree(x,z,.65+Math.random()*.45)
+    house(-3.5,-3.1,.95,0); house(2.5,-3.5,.9,1); house(4.1,.1,.88,0)
+    house(-4.2,3.0,.88,1); house(2.9,3.35,.85,2); house(-2.8,.1,.8,1)
+    house(6.1,-1.5,.72,0); house(-6.1,1.3,.72,2)
+
+    // Community centre
+    const hall = new THREE.Group()
+    const hallBody = new THREE.Mesh(new THREE.BoxGeometry(2.0,1.0,1.55),mat('#e2d4b8'))
+    hallBody.position.y=.52; hallBody.castShadow=true; hall.add(hallBody)
+    const hallRoof = new THREE.Mesh(new THREE.ConeGeometry(1.48,.7,4),mat('#657d62'))
+    hallRoof.rotation.y=Math.PI/4; hallRoof.position.y=1.35; hallRoof.castShadow=true; hall.add(hallRoof)
+    hall.position.set(4.5,0,-2.0); scene.add(hall)
+
+    // Local market with individual awnings
+    for(let i=0;i<3;i++){
+      const stall=new THREE.Group()
+      const counter=new THREE.Mesh(new THREE.BoxGeometry(.95,.48,.7),mat('#a9825f'))
+      counter.position.y=.25; counter.castShadow=true; stall.add(counter)
+      const canopy=new THREE.Mesh(new THREE.BoxGeometry(1.12,.08,.88),mat(i%2?'#c17d5e':'#e4c99d'))
+      canopy.position.y=.95; canopy.castShadow=true; stall.add(canopy)
+      ;[-.42,.42].forEach(x=>{const post=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.9,8),darkWood);post.position.set(x,.48,0);stall.add(post)})
+      stall.position.set(-3.8+i*1.25,0,4.25);scene.add(stall)
     }
-    const controls = new OrbitControls(camera, renderer.domElement)
-    controls.enableDamping=true; controls.enablePan=false
-    controls.minDistance=10; controls.maxDistance=25
-    controls.maxPolarAngle=Math.PI/2.05
-    const resize = () => {
-      const w=host.clientWidth, h=host.clientHeight
-      if(!w||!h) return
-      camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h)
+
+    // Learning space and farm plots
+    const learning = new THREE.Group()
+    const learnBody=new THREE.Mesh(new THREE.BoxGeometry(1.75,.72,1.3),mat('#e9dfc9'))
+    learnBody.position.y=.38;learnBody.castShadow=true;learning.add(learnBody)
+    const learnRoof=new THREE.Mesh(new THREE.ConeGeometry(1.25,.55,4),mat('#9b7656'))
+    learnRoof.rotation.y=Math.PI/4;learnRoof.position.y=1.0;learning.add(learnRoof)
+    learning.position.set(-5.1,-.0,-2.3);scene.add(learning)
+    const cropMat=[mat('#879a65'),mat('#9baa70'),mat('#b3b77d')]
+    for(let r=0;r<4;r++) for(let c=0;c<5;c++){
+      const crop=new THREE.Mesh(new THREE.BoxGeometry(.38,.18,.32),cropMat[(r+c)%3])
+      crop.position.set(3.6+c*.48,.08+r*.015,3.1+r*.48)
+      crop.castShadow=true;scene.add(crop)
     }
-    observer = new ResizeObserver(resize); observer.observe(host); resize()
-    const animate=()=>{ frame=requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera) }
+    // Pond with a natural bank
+    const pondBank=new THREE.Mesh(new THREE.CircleGeometry(1.55,40),mat('#b4b18e'))
+    pondBank.rotation.x=-Math.PI/2;pondBank.scale.set(1.3,.85,1);pondBank.position.set(-4.4,-.005,-1.1);scene.add(pondBank)
+    const pond=new THREE.Mesh(new THREE.CircleGeometry(1.35,40),new THREE.MeshStandardMaterial({color:'#83a9a5',roughness:.25,metalness:.05}))
+    pond.rotation.x=-Math.PI/2;pond.scale.set(1.3,.85,1);pond.position.set(-4.4,.008,-1.1);scene.add(pond)
+
+    // Deterministic trees and shrubs
+    const treeMats=['#718967','#849875','#627c60'].map(c=>mat(c))
+    const trunkMat=mat('#80644b')
+    const treePoints=[[-6,-5],[-5,-5.6],[-2,-5.5],[1,-5.7],[6,-5],[6.5,-3.5],[-6,0],[-6,4.8],[-2,5.8],[0,5.7],[1.5,5.8],[6,5.7],[6.5,2.5],[2,0]]
+    treePoints.forEach(([x,z],i)=>{
+      const scale=.65+(i%3)*.12
+      const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.055*scale,.09*scale,.45*scale,7),trunkMat)
+      trunk.position.set(x,.2*scale,z);trunk.castShadow=true;scene.add(trunk)
+      const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(.38*scale,1),treeMats[i%3])
+      crown.position.set(x,.52*scale,z);crown.castShadow=true;scene.add(crown)
+    })
+
+    const locations = [
+      {name:'ศูนย์ชุมชน', position:[4.5,0,-2.0], description:'พื้นที่ประชุม แลกเปลี่ยนความคิดเห็น และจัดกิจกรรมของคนในชุมชน', type:'พื้นที่ส่วนกลาง'},
+      {name:'ตลาดท้องถิ่น', position:[-2.55,0,4.25], description:'พื้นที่จำหน่ายสินค้า อาหาร และผลิตภัณฑ์จากภูมิปัญญาท้องถิ่น', type:'เศรษฐกิจชุมชน'},
+      {name:'พื้นที่เกษตร', position:[4.65,0,4.0], description:'แปลงสาธิตการปลูกพืชและพื้นที่เรียนรู้ด้านเกษตร', type:'เกษตรและทรัพยากร'},
+      {name:'แหล่งเรียนรู้', position:[-5.1,0,-2.3], description:'พื้นที่ถ่ายทอดความรู้ ทักษะ และภูมิปัญญาระหว่างคนต่างวัย', type:'การเรียนรู้'}
+    ]
+    const markerObjects=[]
+    const markerMaterials={}
+    function makeLabel(text){
+      const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128
+      const ctx=canvas.getContext('2d')
+      ctx.fillStyle='rgba(23,60,50,.92)'
+      ctx.beginPath();ctx.roundRect(8,8,496,112,24);ctx.fill()
+      ctx.fillStyle='#fffaf0';ctx.font='bold 38px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,64)
+      const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace
+      const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false}))
+      sprite.scale.set(2.15,.54,1)
+      return sprite
+    }
+    locations.forEach((loc)=>{
+      const group=new THREE.Group()
+      const pole=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.48,8),mat('#f7f0df'))
+      pole.position.y=.34;group.add(pole)
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(.23,.035,8,28),mat('#c17b5d'))
+      ring.rotation.x=Math.PI/2;ring.position.y=.64;group.add(ring)
+      const dot=new THREE.Mesh(new THREE.SphereGeometry(.14,18,14),mat('#173c32'))
+      dot.position.y=.64;group.add(dot)
+      const label=makeLabel(loc.name);label.position.y=1.28;group.add(label)
+      group.position.set(...loc.position);group.userData.place=loc.name
+      group.traverse(o=>{o.userData.place=loc.name})
+      scene.add(group);markerObjects.push(group)
+      markerMaterials[loc.name]={dot:ring.material,core:dot.material}
+    })
+
+    const controls = new OrbitControls(camera,renderer.domElement)
+    controls.enableDamping=true;controls.dampingFactor=.06
+    controls.enablePan=true;controls.panSpeed=.55
+    controls.minDistance=8;controls.maxDistance=24
+    controls.maxPolarAngle=Math.PI/2.08
+    controls.target.set(0,0,0)
+    const raycaster=new THREE.Raycaster()
+    const pointer=new THREE.Vector2()
+    const onPointer=(event)=>{
+      const rect=renderer.domElement.getBoundingClientRect()
+      pointer.x=((event.clientX-rect.left)/rect.width)*2-1
+      pointer.y=-((event.clientY-rect.top)/rect.height)*2+1
+      raycaster.setFromCamera(pointer,camera)
+      const hits=raycaster.intersectObjects(markerObjects,true)
+      if(hits.length){
+        let obj=hits[0].object
+        while(obj && !obj.userData.place) obj=obj.parent
+        if(obj?.userData.place) selectRef.current?.(obj.userData.place)
+      }
+    }
+    renderer.domElement.addEventListener('pointerdown',onPointer)
+    const resize=()=>{
+      const w=host.clientWidth,h=host.clientHeight
+      if(!w||!h)return
+      camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)
+    }
+    observer=new ResizeObserver(resize);observer.observe(host);resize()
+    const animate=()=>{
+      raf=requestAnimationFrame(animate)
+      const active=activeRef.current
+      markerObjects.forEach(group=>{
+        const isActive=group.userData.place===active
+        group.scale.setScalar(isActive?1.16:1)
+        const materials=markerMaterials[group.userData.place]
+        materials.core.color.set(isActive?'#c17b5d':'#173c32')
+        materials.dot.color.set(isActive?'#e0a17e':'#c17b5d')
+      })
+      controls.update();renderer.render(scene,camera)
+    }
     animate()
-    return ()=>{ cancelAnimationFrame(frame); observer?.disconnect(); controls.dispose(); renderer.dispose(); host.removeChild(renderer.domElement); scene.traverse(o=>{o.geometry?.dispose(); if(o.material){Array.isArray(o.material)?o.material.forEach(m=>m.dispose()):o.material.dispose()}}) }
-  }, [])
-  return <div className="village-canvas" ref={mountRef}><span className="scene-hint">DRAG TO EXPLORE · ลากเพื่อหมุนมุมมอง</span></div>
+    return ()=>{
+      cancelAnimationFrame(raf);observer?.disconnect()
+      renderer.domElement.removeEventListener('pointerdown',onPointer)
+      controls.dispose();renderer.dispose()
+      if(renderer.domElement.parentNode===host)host.removeChild(renderer.domElement)
+      scene.traverse(o=>{
+        o.geometry?.dispose()
+        if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{m.map?.dispose();m.dispose()})}
+      })
+    }
+  },[])
+  return <div className="village-canvas" ref={mountRef}>
+    <span className="scene-hint">แตะหมุดเพื่อดูสถานที่ · ลากเพื่อหมุน · ซูมเพื่อสำรวจ</span>
+    <button className="scene-reset" type="button" onClick={()=>{const canvas=mountRef.current?.querySelector('canvas');if(canvas)canvas.dispatchEvent(new CustomEvent('nera-reset'))}}>3D VIEW</button>
+  </div>
 }
 
 function Header() {
@@ -138,6 +277,12 @@ function App(){
   const [selected,setSelected]=useState('ทั้งหมด')
   const [activePlace,setActivePlace]=useState('ศูนย์ชุมชน')
   const places=['ศูนย์ชุมชน','ตลาดท้องถิ่น','พื้นที่เกษตร','แหล่งเรียนรู้']
+  const placeDetails={
+    'ศูนย์ชุมชน':{type:'พื้นที่ส่วนกลาง',description:'พื้นที่ประชุม แลกเปลี่ยนความคิดเห็น และจัดกิจกรรมของคนในชุมชน'},
+    'ตลาดท้องถิ่น':{type:'เศรษฐกิจชุมชน',description:'พื้นที่จำหน่ายสินค้า อาหาร และผลิตภัณฑ์จากภูมิปัญญาท้องถิ่น'},
+    'พื้นที่เกษตร':{type:'เกษตรและทรัพยากร',description:'แปลงสาธิตการปลูกพืชและพื้นที่เรียนรู้ด้านเกษตร'},
+    'แหล่งเรียนรู้':{type:'การเรียนรู้',description:'พื้นที่ถ่ายทอดความรู้ ทักษะ และภูมิปัญญาระหว่างคนต่างวัย'}
+  }
   const submit=(e)=>{e.preventDefault();setSent(true)}
   return <div id="top">
     <Header/>
@@ -171,7 +316,7 @@ function App(){
       <section className="explore-section" id="explore">
         <SectionLabel no="02" en="EXPLORE THE VILLAGE"/>
         <div className="section-heading"><div><p className="kicker">A PLACE TO DISCOVER</p><h2>สำรวจพื้นที่<br/><em>ในมุมมองใหม่</em></h2></div><p className="heading-note">มองเห็นความเชื่อมโยงของสถานที่ ผู้คน และทรัพยากร ผ่านแผนที่ชุมชนสามมิติ</p></div>
-        <div className="village-frame"><div className="village-topline"><span>COMMUNITY MAP / 001</span><span>INTERACTIVE 3D MODEL</span></div><VillageScene/><div className="village-bottom"><div><span className="tiny-label">SELECTED LOCATION</span><strong>{activePlace}</strong></div><div className="place-pills">{places.map(p=><button className={activePlace===p?'active':''} onClick={()=>setActivePlace(p)} key={p}>{p}</button>)}</div></div></div>
+        <div className="village-frame"><div className="village-topline"><span>COMMUNITY MAP / 001</span><span>INTERACTIVE 3D MODEL · DEMO DATA</span></div><VillageScene activePlace={activePlace} onSelect={setActivePlace}/><div className="village-bottom"><div className="selected-place"><span className="tiny-label">SELECTED LOCATION</span><strong>{activePlace}</strong><small>{placeDetails[activePlace].type}</small><p>{placeDetails[activePlace].description}</p></div><div className="place-pills">{places.map(p=><button className={activePlace===p?'active':''} onClick={()=>setActivePlace(p)} key={p}>{p}</button>)}</div></div></div>
       </section>
 
       <section className="identity-section" id="products">
